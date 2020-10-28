@@ -1,0 +1,47 @@
+---
+title: "data_exploratory"
+author: "Yuxin Yang"
+date: "25/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(MASS)
+library(naniar)
+```
+
+```{r}
+survey_data <- read_csv("survey_data.csv")
+# View(survey_data)
+
+survey_data <- survey_data %>%
+  na.omit()
+```
+```{r}
+head(survey_data)
+```
+
+
+```{r}
+model_initial <- glm(vote_trump ~ vote_2016 + ideo5 + employment + foreign_born + gender + race_ethnicity + household_income + education + age, data = survey_data, binomial)
+summary(model_initial)
+```
+
+```{r}
+stepAIC(model_initial, direction = "both")
+```
+
+```{r}
+model1 <- glm(vote_trump ~ vote_2016 + ideo5 + employment + gender + race_ethnicity + education, family = binomial, data = survey_data)
+summary(model1)
+```
+
+```{r}
+stepAIC(model1, direction = "both")
+```
