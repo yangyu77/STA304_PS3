@@ -1,0 +1,11 @@
+---
+title: "ProblemSet3"
+author: "Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang"
+date: "27/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+

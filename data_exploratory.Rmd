@@ -29,7 +29,7 @@ head(survey_data)
 
 
 ```{r}
-model_initial <- glm(vote_trump ~ vote_2016 + ideo5 + employment + foreign_born + gender + race_ethnicity + household_income + education + age, data = survey_data, binomial)
+model_initial <- glm(vote_trump ~ vote_2016 + ideo5 + employment + foreign_born + gender + race_ethnicity + household_income + education + state + age, data = survey_data, binomial)
 summary(model_initial)
 ```
 

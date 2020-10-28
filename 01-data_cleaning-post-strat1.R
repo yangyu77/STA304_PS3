@@ -39,7 +39,7 @@ reduced_data <-
          ftotinc # Total family income
          )
 
-reduced_data         
+## 目前只做到这一步, 下面需要选一些variable作group, 看哪几个比较合适? 
 
 #### What's next? ####
 
