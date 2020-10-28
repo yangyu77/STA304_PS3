@@ -1,0 +1,112 @@
+---
+title: "01-data_cleaning-survey1"
+author: "Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang"
+date: "28/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#### Preamble ####
+# Purpose: Prepare and clean the survey data downloaded from voterstudygroup.org
+# Author: Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang
+# Data: 22 October 2020
+# Contact: rohan.alexander@utoronto.ca [PROBABLY CHANGE THIS ALSO!!!!]
+# License: MIT
+# Pre-requisites: 
+# - Need to have downloaded the data from X and save the folder that you're 
+# interested in to inputs/data 
+# - Don't forget to gitignore it!
+
+
+#### Workspace setup ####
+```{r}
+library(haven)
+library(tidyverse)
+setwd("~/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3")
+# Read in the raw data (You might need to change this if you use a different dataset)
+raw_data <- read_dta("ns20200625.dta")
+
+# Add the labels
+raw_data <- labelled::to_factor(raw_data)
+```
+
+```{r}
+# Just keep some variables
+reduced_survey_data <- 
+  raw_data %>% 
+  dplyr::select(interest,
+         registration,
+         vote_2016,
+         vote_intention,
+         vote_2020,
+         ideo5,
+         employment,
+         foreign_born,
+         gender,
+         census_region,
+         hispanic,
+         race_ethnicity,
+         household_income,
+         education,
+         state,
+         congress_district,
+         age)
+```
+
+#### What else???? ####
+# Maybe make some age-groups?
+# Maybe check the values?
+# Is vote a binary? If not, what are you going to do?
+```{r}
+reduced_survey_data<-reduced_survey_data %>%
+  mutate(vote_trump = ifelse(vote_2020=="Donald Trump", 1, 0)) %>%
+  #Convert state abbreviations to names
+  mutate(state_name = state.name[match(state, state.abb)]) %>% 
+  # select variables in interest
+  dplyr::select(vote_2016, gender, age, race_ethnicity, employment, state_name, vote_trump) %>%
+  na.omit()
+
+reduced_survey_data$employment <- ifelse(reduced_survey_data$employment=="Full-time employed", "Employed", 
+                                  ifelse(reduced_survey_data$employment=="Homemaker", "Not in labor force", 
+                                  ifelse(reduced_survey_data$employment=="Retired", "Not in labor force", 
+                                  ifelse(reduced_survey_data$employment=="Unemployed or temporarily on layoff", "Unemployed",
+                                  ifelse(reduced_survey_data$employment=="Part-time employed", "Employed",
+                                  ifelse(reduced_survey_data$employment=="Permanently disabled", "Not in labor force", 
+                                  ifelse(reduced_survey_data$employment=="Student", "Student",
+                                  ifelse(reduced_survey_data$employment=="Self-employed", "Employed", 
+                                  ifelse(reduced_survey_data$employment=="Other:", "Other",
+                        NA  )))))))))
+
+reduced_survey_data$race_ethnicity <- ifelse(reduced_survey_data$race_ethnicity=="Asian (Asian Indian)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Chinese)", "East Asian", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Filipino)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Japanese)", "East Asian",
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Korean)", "East Asian",
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Vietnamese)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Asian (Other)", "Other Asian or Pacific Islander",
+                                      ifelse(reduced_survey_data$race_ethnicity=="Pacific Islander (Native Hawaiian)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Pacific Islander (Guamanian)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Pacific Islander (Samoan)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Pacific Islander (Other)", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Some other race", "Other",
+                                      ifelse(reduced_survey_data$race_ethnicity=="White", "White", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="Black, or African American", "Black or African American", 
+                                      ifelse(reduced_survey_data$race_ethnicity=="American Indian or Alaska Native", "American Indian or Alaska Native", 
+                        NA  )))))))))))))))
+
+View(reduced_survey_data)
+```
+
+```{r}
+View(reduced_survey_data)
+```
+
+
+# Saving the survey/sample data as a csv file in my
+# working directory
+```{r}
+write_csv(reduced_survey_data, "/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/survey_data.csv")
+```

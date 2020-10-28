@@ -1,11 +1,54 @@
 ---
-title: "ProblemSet3"
+title: "Title of Your Report"
 author: "Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang"
 date: "27/10/2020"
-output: pdf_document
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+# Loading in the cleaned survey Data
+survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/survey_data.csv")
+
+# Loading in the cleaned census Data
+census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv")
+
 ```
+
+
+# Title of your Report
+
+## Name(s) of Author(s) 
+## Date
+
+
+# Model
+
+Here we are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we are employing a post-stratification technique. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
+
+
+## Model Specifics
+We will be using a logistic regression model to model the proportion of voters who will vote for Donald Trump. This is a naive model. I will only be using age, which is recorded as a numeric variable, to model the probability of voting for Donald Trump. The simple linear regression model I am using is:
+
+$$ y = \beta_0+\beta_1  x_{} + \epsilon$$
+
+Where $y$ represents the proportion of voters who will vote for Donald Trump. Similarly, $\beta_0$ represents the intercept of the model, and is the probability of voting for Donald Trump at age 0. Additionally, $\beta_1$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
+```{r}
+
+# Creating the Model
+model_logit <- glm(vote_trump ~ ., data = survey_data, binomial)
+summary(model_logit)
+
+# Model Results (to Report in Results section)
+# summary(model)
+# OR
+# broom::tidy(model)
+```
+
+
+
 
