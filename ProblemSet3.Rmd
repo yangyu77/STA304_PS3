@@ -38,15 +38,12 @@ $$ y = \beta_0+\beta_1  x_{} + \epsilon$$
 
 Where $y$ represents the proportion of voters who will vote for Donald Trump. Similarly, $\beta_0$ represents the intercept of the model, and is the probability of voting for Donald Trump at age 0. Additionally, $\beta_1$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
 ```{r}
-
 # Creating the Model
 model_logit <- glm(vote_trump ~ ., data = survey_data, binomial)
-summary(model_logit)
 
 # Model Results (to Report in Results section)
-# summary(model)
-# OR
-# broom::tidy(model)
+summary(model_logit) #, or
+# broom::tidy(model_logit)
 ```
 
 
