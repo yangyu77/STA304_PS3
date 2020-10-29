@@ -10,14 +10,16 @@ output:
 
 ```{r setup, include=FALSE}
 library(tidyverse)
+library(visdat)
 
 # Loading in the cleaned survey Data
 survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/survey_data.csv")
 
 # Loading in the cleaned census Data
-census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv")
-
+census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv") %>%
+  na.omit()
 ```
+
 
 
 # Title of your Report
@@ -39,11 +41,52 @@ $$ y = \beta_0+\beta_1  x_{} + \epsilon$$
 Where $y$ represents the proportion of voters who will vote for Donald Trump. Similarly, $\beta_0$ represents the intercept of the model, and is the probability of voting for Donald Trump at age 0. Additionally, $\beta_1$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
 ```{r}
 # Creating the Model
-model_logit <- glm(vote_trump ~ ., data = survey_data, binomial)
+model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-summary(model_logit) #, or
-# broom::tidy(model_logit)
+summary(model_logit_trump) #, or
+# broom::tidy(model_logit_trump)
+```
+
+```{r}
+census_data$logodds_estimate <- model_logit_trump%>%
+  predict(newdata = census_data)
+
+census_data$estimate <- exp(census_data$logodds_estimate)/(1+exp(census_data$logodds_estimate))
+
+census_data <- census_data %>%
+  mutate(elect_predict_prob = estimate * n) 
+```
+
+```{r}
+Trump_prob <- sum(census_data$elect_predict_prob)/sum(census_data$n)
+Trump_prob
+```
+
+
+### Joe Biden ###
+```{r}
+# Creating the Model
+model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
+
+# Model Results (to Report in Results section)
+summary(model_logit_biden) #, or
+# broom::tidy(model_logit_biden)
+```
+
+```{r}
+census_data$logodds_estimate2 <- model_logit_biden%>%
+  predict(newdata = census_data)
+
+census_data$estimate2 <- exp(census_data$logodds_estimate2)/(1+exp(census_data$logodds_estimate2))
+
+census_data <- census_data %>%
+  mutate(elect_predict_prob2 = estimate2 * n) 
+```
+
+```{r}
+Biden_prob <- sum(census_data$elect_predict_prob2)/sum(census_data$n)
+Biden_prob
 ```
 
 

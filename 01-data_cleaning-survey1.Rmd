@@ -63,10 +63,11 @@ reduced_survey_data <-
 ```{r}
 reduced_survey_data<-reduced_survey_data %>%
   mutate(vote_trump = ifelse(vote_2020=="Donald Trump", 1, 0)) %>%
+  mutate(vote_biden = ifelse(vote_2020=="Joe Biden", 1, 0)) %>%
   #Convert state abbreviations to names
   mutate(state_name = state.name[match(state, state.abb)]) %>% 
   # select variables in interest
-  dplyr::select(vote_2016, gender, age, race_ethnicity, employment, state_name, vote_trump) %>%
+  dplyr::select(vote_2016, gender, age, race_ethnicity, employment, state_name, vote_trump, vote_biden) %>%
   na.omit()
 
 reduced_survey_data$employment <- ifelse(reduced_survey_data$employment=="Full-time employed", "Employed", 

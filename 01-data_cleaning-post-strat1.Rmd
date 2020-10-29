@@ -51,14 +51,15 @@ reduced_census_data <- raw_census_data %>%
 ```{r}
 reduced_census_data <- reduced_census_data %>%
   as_tibble() %>%
-  dplyr::rename(state = stateicp, gender = sex, race_ethnicity = race, employment = empstatd) %>%
+  dplyr::rename(state_name = stateicp, gender = sex, race_ethnicity = race, employment = empstatd) %>%
+  filter(state_name != "district of columbia") %>%
   filter(race_ethnicity != "two major races") %>%
   filter(race_ethnicity != "three or more major races") %>%
   filter(as.double(age) > 17) %>%
   filter(age != "less than 1 year old")
 
 reduced_census_data$gender <- ifelse(reduced_census_data$gender=="male", "Male", "Female")
-reduced_census_data$state <- str_to_title(reduced_census_data$state)
+reduced_census_data$state_name <- str_to_title(reduced_census_data$state_name)
 
 reduced_census_data$employment <- ifelse(reduced_census_data$employment=="at work", "Employed", 
                                 ifelse(reduced_census_data$employment=="at work, public emerg", "Employed", 
@@ -75,11 +76,21 @@ reduced_census_data$employment <- ifelse(reduced_census_data$employment=="at wor
                                 ifelse(reduced_census_data$employment=="nilf, school", "Student", 
                                 ifelse(reduced_census_data$employment=="nilf, other", "Not in labor force",  
                         NA  ))))))))))))))
+
+reduced_census_data$race_ethnicity <- ifelse(reduced_census_data$race_ethnicity=="white", "White", 
+                                      ifelse(reduced_census_data$race_ethnicity=="black/african american/negro", "Black or African American", 
+                                      ifelse(reduced_census_data$race_ethnicity=="american indian or alaska native", "American Indian or Alaska Native", 
+                                      ifelse(reduced_census_data$race_ethnicity=="chinese", "East Asian", 
+                                      ifelse(reduced_census_data$race_ethnicity=="japanese", "East Asian", 
+                                      ifelse(reduced_census_data$race_ethnicity=="other asian or pacific islander", "Other Asian or Pacific Islander", 
+                                      ifelse(reduced_census_data$race_ethnicity=="other race, nec", "Other", 
+                                      NA  )))))))
 ```
 
 ```{r}
 reduced_census_data <- reduced_census_data %>%
-  group_by(state, gender, age, race_ethnicity, employment) %>%
+  na.omit() %>%
+  group_by(state_name, gender, age, race_ethnicity, employment) %>%
   count()
 ```
 
