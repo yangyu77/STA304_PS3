@@ -103,7 +103,6 @@ reduced_survey_data$race_ethnicity <- ifelse(reduced_survey_data$race_ethnicity=
 View(reduced_survey_data)
 ```
 
-
 # Saving the survey/sample data as a csv file in my
 # working directory
 ```{r}

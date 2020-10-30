@@ -1,5 +1,5 @@
 ---
-title: "Title of Your Report"
+title: "Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression and Post-stratification"
 author: "Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang"
 date: "27/10/2020"
 output:
@@ -19,13 +19,33 @@ survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA3
 census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv") %>%
   na.omit()
 ```
+```{r}
+nrow(census_data)
+```
+
 
 
 
 # Title of your Report
 
-## Name(s) of Author(s) 
-## Date
+### Authors: Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang
+### Date: Oct. 27 2020
+### Code and data supporting this analysis is available at: https://github.com/yangyu77/STA304_PS3.git
+
+As the U.S. presidential election day approaches, many people are increasingly concerning about the election results. We are interested in seeing if Dodald Trump would win the 2020 re-election race with Democrat Joe Biden, thus we choose to build a model to predict the popular vote of the 2020 U.S. election based on the Democracy Fund + UCLA Nationscape data and the American Community Surveys (ACS) data. 
+
++ The Democracy Fund + UCLA Nationscape data:
+*Tausanovitch, Chris and Lynn Vavreck. 2020. Democracy Fund + UCLA Nationscape, October 10-17, 2019 (version 20200814). Retrieved from [https://www.voterstudygroup.org/downloads?key=ae440528-c8e4-488f-a153-58e9244de17e].*
+
++ The American Community Surveys:
+*Steven Ruggles, Sarah Flood, Ronald Goeken, Josiah Grover, Erin Meyer, Jose Pacas and Matthew Sobek. IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D010.V10.0*
+
+The Democracy Fund + UCLA Nationscape data was collected from a public opinion survey project. It contains variables for the vote intention for 2020 election, the age, the gender, the race, the employment status of each interviewee, and the state they are living in. The picked data set contains 6,445 observations (rows) in total. 
+The ACS data set contains variable for age, gender, the race, the employment status, and the name of the state. This raw data set contains 3,214,539 observations, thus it is representative for the entire U.S. population. 
+
+We will build logistic regression models based on the Democracy Fund + UCLA Nationscape data, and apply the fitted models to the ACS data set to make predictions for the popular vote outcome. We will also utilize a post-stratification technique. We note that the Nationscape data also includes the vote choice for 2016 election, which could be a good predictor for the current election voting. However, we will not include this variable in the models, because the ACS data set does not include vote choice variable while we need the two data sets to match exactly for prediction. 
+
+
 
 
 # Model
@@ -34,9 +54,9 @@ Here we are interested in predicting the popular vote outcome of the 2020 Americ
 
 
 ## Model Specifics
-We will be using a logistic regression model to model the proportion of voters who will vote for Donald Trump. This is a naive model. I will only be using age, which is recorded as a numeric variable, to model the probability of voting for Donald Trump. The simple linear regression model I am using is:
+We will be using a logistic regression model to model the proportion of voters who will vote for Donald Trump. This is a naive model. I will only be using age, which is recorded as a numeric variable, to model the probability of voting for Donald Trump. The logistic regression model we are using is:
 
-$$ y = \beta_0+\beta_1  x_{} + \epsilon$$
+$$ y = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
 
 Where $y$ represents the proportion of voters who will vote for Donald Trump. Similarly, $\beta_0$ represents the intercept of the model, and is the probability of voting for Donald Trump at age 0. Additionally, $\beta_1$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
 ```{r}
@@ -44,8 +64,8 @@ Where $y$ represents the proportion of voters who will vote for Donald Trump. Si
 model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-summary(model_logit_trump) #, or
-# broom::tidy(model_logit_trump)
+# summary(model_logit_trump) #, or
+broom::tidy(model_logit_trump)
 ```
 
 ```{r}
@@ -70,8 +90,8 @@ Trump_prob
 model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-summary(model_logit_biden) #, or
-# broom::tidy(model_logit_biden)
+# summary(model_logit_biden) #, or
+broom::tidy(model_logit_biden)
 ```
 
 ```{r}
@@ -89,6 +109,23 @@ Biden_prob <- sum(census_data$elect_predict_prob2)/sum(census_data$n)
 Biden_prob
 ```
 
+```{r}
+polling <- census_data%>%
+  group_by(state_name) %>%
+  mutate(state_poll_trump = sum(elect_predict_prob)/sum(n)) %>%
+  mutate(state_poll_biden = sum(elect_predict_prob2)/sum(n)) %>%
+  dplyr::select(state_name, state_poll_trump, state_poll_biden) %>%
+  distinct() %>%
+  mutate(trump_victory = ifelse(state_poll_trump > state_poll_biden, 1, 0)) %>%
+  mutate(biden_victory = ifelse(state_poll_biden > state_poll_trump, 1, 0))
+polling$state_name
+polling$num_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
 
+View(polling)
+```
+```{r}
+sum(polling$trump_victory * polling$num_votes)
+sum(polling$biden_victory * polling$num_votes)
+```
 
 

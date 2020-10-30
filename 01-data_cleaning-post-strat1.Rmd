@@ -33,6 +33,7 @@ raw_census_data <- read_dta("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/
 raw_census_data <- labelled::to_factor(raw_census_data)
 ```
 
+
 # Keep some variables of interest
 ```{r}
 reduced_census_data <- raw_census_data %>%
@@ -97,7 +98,6 @@ reduced_census_data <- reduced_census_data %>%
 ```{r}
 View(reduced_census_data)
 ```
-
 
 # Saving the census data as a csv file in my
 # working directory
