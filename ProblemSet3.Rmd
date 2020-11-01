@@ -53,7 +53,7 @@ The original ACS data set contains a comprehensive set of variables for demograp
 
 In order to make prediction using the fitted model, we need to pick variables that match the predictor variables in the model. Therefore, we pick the equivalent predictor variables as the `survey_data`, which are the gender, age, race, employment status, and the state name. We modify the categories for some variables to get an exact match of variables from the two data sets. We also exclude respondents aged less than 16, because they are ineligible for voting up until 2020. 
 
-The cleaned data set `census_data` is already post-stratified. The column variable `n` represents the number of respondents within the same group of state, gender, age, race, and employment status.
+The cleaned data set `census_data` is already post-stratified. The column variable `n` represents the number of respondents within the same group of state, gender, age, race, and employment status. The details of poststratification will be discussed later.
 
 
 
@@ -61,39 +61,53 @@ The cleaned data set `census_data` is already post-stratified. The column variab
 
 ## Model
 
-We are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we will build *two* binary logistic regression models based on the Democracy Fund + UCLA Nationscape data (the `survey_data`), and apply the fitted models to the ACS data set (the `census_data`) to make predictions for proportion of voters who advocate Donald Trump/Biden, in another words, the probability of Trump/Biden wining the election. We will also utilize a post-stratification technique to account for any under-represented groups in the voting population. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
+We are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we will first build *two* binary logistic regression models based on the Democracy Fund + UCLA Nationscape data (the `survey_data`), and apply the fitted models to the ACS data set (the `census_data`) to make predictions for proportion of voters who advocate Donald Trump/Biden, in another words, the probability of Trump/Biden wining the election. We will also utilize a post-stratification technique to account for any under-represented groups in the Nationscape data set. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
 
 For the explanatory variables, we will be using age, which is recorded as a numeric variable, and gender, race, employment status, states as categorical variables to model the probability of voters voting for Donald Trump or Joe Biden. 
 
 The five predictor variables are:
+
 $x_{age}$: a numeric variable, representing the age of the respondent.
+
 $x_{gender}$: the gender identity of the respondent in the Nationscape survey study, which is either male or female.
+
 $x_{race\_ethnicity}$: the single race that the respondent belongs to in terms of anthropological concept. This variable has 6 categories:
+
 1. White; 
 2. Black or African American; 
 3. American Indian or Alaska Native;
 4. East Asian;
 5. Other Asian or Pacific Islander;
 6. Other.
+
 $x_{employment}$: the employment status of the respondent. This variable has 5 categories:
+
 1. Employed; 
 2. Unemployed; 
 3. Not in labor force;
 4. Student;
 5. Other.
 * Homemaker, retired people, and disabled individuals are categorized as "not in labor force".
+
 $x_{state\_name}$: the state that the respondent live in. This variable includes all US states except the District of Colombia and Puerto Rico.
 
 
 The logistic regression models we are using is:
 
 + Donald Trump:
-$$ y_{vote\_trump} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
-Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
+$$ y_{vote\_trump} = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
+$$ \beta_6 X_{Other Asian or Pacific Islander} + \beta_7 X_{White} + \beta_8 X_{NotInLaborForce} + \beta_9 X_{employmentOther} + \beta_{10} X_{Student} +$$
+$$\beta_{11} X_{Unemployed} + \beta_{12} X_{Alaska} + \beta_{13} X_{Arizona} + \beta_{14} X_{Arkansas} + \beta_{15} X_{California} + \beta_{16} X_{Colorado} + $$
+$$\beta_{17} X_{Connecticut} + \beta_{18} X_{Delaware} + \beta_{19} X_{Florida} + \beta_{20} X_{Georgia} + \beta_{21} X_{Hawaii} +  \beta_{22} X_{Idaho} + \beta_{23} X_{Illinois} +$$ 
+$$ \beta_{24} X_{Indiana} + \beta_{25} X_{Iowa} + \beta_{26} X_{Kansas} + \beta_{27} X_{Kentucky} + \beta_{28} X_{Louisiana} + \beta_{29} X_{Maine} +$$ 
+$$ \beta_{30} X_{Maryland} + \beta_{31} X_{Massachusetts} + \beta_{32} X_{Michigan} + \beta_{33} X_{Minnesota} + \beta_{34} X_{Mississippi} + \beta_{35} X_{Missouri} +$$ 
+$$ \beta_{36} X_{Montana} + \beta_{37} X_{Nebraska} +\beta_{38} X_{Nevada} +\beta_{39} X_{New Hampshire} +  \beta_{40} X_{New Jersey} + \beta_{41} X_{New Mexico} + $$ 
+$$ \beta_{42} X_{New York} + \beta_{43} X_{North Carolina} + \beta_{44} X_{North Dakota} + beta_{45} X_{Ohio} + \beta_{46} x_{Oklahoma} + \beta_{47} X_{Oregon} +$$ 
+$$\beta_{48} X_{Pennsylvania} + \beta_{49} X_{Rhode Island} + \beta_{50} X_{South Carolina} + \beta_{51} X_{South Dakota} + \beta_{52} X_{Tennessee} + \beta_{53} x_{Texas} +$$ 
+$$\beta_{54} X_{Utah} + \beta_{55} X_{Vermont} + \beta_{56} X_{Virginia} + \beta_{57} X_{Washington} + \beta_{58} X_{West Virginia} + \beta_{59} X_{Wisconsin} + \beta_{60} X_{Wyoming} + \epsilon$$ 
 
-+ Joe Biden:
-$$ y_{vote\_biden} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
-Where $y$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
+
+Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
 
 $\beta_0$ represents the intercept of the model. 
 
@@ -101,6 +115,17 @@ $\beta_1$ represents the relationship between whether vote for Trump and the vot
 
 $\beta_2$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_2$ increase in the probability of voting for Donald Trump.
 
+$\beta_3$ to $\beta_6$ represents the relationship between whether vote for Trump and the voter as different race (Black or African American, white, East Asian, Other Asian or Pacific Islander,  Other)
+
+$\beta_7$ to $\beta_{10}$ represents the relationship between whether vote for Trump and the voter as different employment statuses (not in labor force, not employment,student, Other)
+
+$\beta_{11}$ to $\beta_{60}$ represents the relationship between whether vote for Trump and the different states the voters live in, when all other predictors hold as the same.
+
+
++ Joe Biden:
+
+The model is the same as the model for Trump, except that the response variable is `vote\_biden`,
+where $y$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
 
 
 
