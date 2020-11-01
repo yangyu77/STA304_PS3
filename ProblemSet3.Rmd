@@ -1,6 +1,6 @@
 ---
 title: "Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression and Post-stratification"
-author: "Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang"
+author: "Jiaheng Li, Yuechen Shen, Yuxin Yang"
 date: "27/10/2020"
 output:
   pdf_document: default
@@ -24,26 +24,28 @@ census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA3
 
 
 
-### Code and data supporting this analysis is available at: 
+*Code and data supporting this analysis is available at: *
 https://github.com/yangyu77/STA304_PS3.git
+
 
 
 Who will win the election? Trump or Biden? As the U.S. presidential election day approaches, many people are increasingly concerning about the election results. We are interested in seeing if Dodald Trump would win the 2020 re-election race with Democrat Joe Biden, thus we choose to use a regression model to predict the popular vote outcome of the 2020 U.S. election based on the Democracy Fund + UCLA Nationscape data and the American Community Surveys (ACS) data. 
 
-## Overview: Data Sets After Data Cleaning
+# Overview: Data Sets After Data Cleaning
 
-+ **The Democracy Fund + UCLA Nationscape data (`survey_data`):**
+**The Democracy Fund + UCLA Nationscape data (`survey_data`):**
 
 *Tausanovitch, Chris and Lynn Vavreck. 2020. Democracy Fund + UCLA Nationscape, October 10-17, 2019 (version 20200814). Retrieved from [https://www.voterstudygroup.org/downloads?key=ae440528-c8e4-488f-a153-58e9244de17e].*
 ```{r, echo=FALSE}
 kbl(head(survey_data), booktabs = T)
 ```
-The Democracy Fund + UCLA Nationscape data set was collected from a public opinion survey project. The original data set contains variables for the political news sources, the political views, the vote choice for 2016 election, the basic demographic information, the employment status, and the state each respondent lives in. 
+The Democracy Fund + UCLA Nationscape data set was collected from a public opinion survey project. The original data set contains variables for the political news sources, the political views, the vote choice for 2016 election, the basic demographic information, the employment status, and the state each respondent lives in. Note that the original data set does not contain any observations from the District of Clumbia.
 
 We pick the gender, the age, the race, the employment status, and the state as the predictor variables, and "whether vote for Trump" as well as "whether vote for Biden" as the response variables to build models. The cleaned data set `survey_data` contains 6,445 observations (rows) in total. We note that the original Nationscape data set also includes the vote choice for 2016 election, which could be a good predictor for the current election voting. However, we will not include this variable in the models, because the ACS data set does not include vote choice variable while we need the two data sets to match exactly for model prediction. 
 
+\newpage
 
-+ **The 2018 American Community Surveys (`census_data`):**
+**The 2018 American Community Surveys (`census_data`):**
 
 *Steven Ruggles, Sarah Flood, Ronald Goeken, Josiah Grover, Erin Meyer, Jose Pacas and Matthew Sobek. IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D010.V10.0*
 ```{r, echo=FALSE}
@@ -59,13 +61,18 @@ The cleaned data set `census_data` is already post-stratified. The column variab
 
 
 
-## Model
+# Model and Specifications
 
 We are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we will first build *two* binary logistic regression models based on the Democracy Fund + UCLA Nationscape data (the `survey_data`), and apply the fitted models to the ACS data set (the `census_data`) to make predictions for proportion of voters who advocate Donald Trump/Biden, in another words, the probability of Trump/Biden wining the election. We will also utilize a post-stratification technique to account for any under-represented groups in the Nationscape data set. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
 
+We use the binary logistic regression model, because our response variable `vote_trump` is binary, representing whether or not the respondent will vote for Trump. It is exactly the model to be used when the dependent variable is binary (0/1, True/False, Yes/No). Moreover, the logistic regression is a classification algorithm which enable us to find the probability of event to be a success or a failure. It supports categorizing data into discrete classes by studying the relationship from a given set of labelled data.[1] 
+
+
+## Model Specifics
+
 For the explanatory variables, we will be using age, which is recorded as a numeric variable, and gender, race, employment status, states as categorical variables to model the probability of voters voting for Donald Trump or Joe Biden. 
 
-The five predictor variables are:
+**The five predictor variables are:**
 
 $x_{age}$: a numeric variable, representing the age of the respondent.
 
@@ -87,12 +94,12 @@ $x_{employment}$: the employment status of the respondent. This variable has 5 c
 3. Not in labor force;
 4. Student;
 5. Other.
-* Homemaker, retired people, and disabled individuals are categorized as "not in labor force".
+P.S. Homemaker, retired people, and disabled individuals are categorized as "not in labor force".
 
 $x_{state\_name}$: the state that the respondent live in. This variable includes all US states except the District of Colombia and Puerto Rico.
 
 
-The logistic regression models we are using is:
+**The logistic regression models we are using are:**
 
 + Donald Trump:
 $$ y_{vote\_trump} = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
@@ -128,33 +135,29 @@ The model is the same as the model for Trump, except that the response variable 
 where $y$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
 
 
+## Model Fitting
 
-## Model Specifics
-We use the binary logistic regression model, because our response variable `vote_trump` is binary, representing whether or not the respondent will vote for Trump. It is exactly the model to be used when the dependent variable is binary (0/1, True/False, Yes/No). Moreover, the logistic regression is a classification algorithm which enable us to find the probability of event to be a success or a failure. It supports categorizing data into discrete classes by studying the relationship from a given set of labelled data.[1] 
-
-For the explanatory variables, we will be using age, which is recorded as a numeric variable, and gender, race, employment status, states as categorical variables to model the probability of voters voting for Donald Trump or Joe Biden. 
-
-The logistic regression model we are using is:
-
-$$ y_{vote\_trump} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
-
-Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
-
++ Donald Trump
 
 ```{r}
-# Creating the Model
-model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
+# Create the Model
+model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + 
+                           state_name, data = survey_data, binomial)
 
-# Model Results (to Report in Results section)
-kbl(broom::tidy(model_logit_trump))
+# Model Summary (to be reported in Results section)
+kable(broom::tidy(model_logit_trump), "latex", booktabs = T) %>% 
+  kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
 ```{r}
+# Apply the fitted model to census_data, and get the log odds estimates
 census_data$logodds_estimate <- model_logit_trump%>%
   predict(newdata = census_data)
 
+# Calculate the probability of voting for Trump for individuals within each stratum
 census_data$estimate <- exp(census_data$logodds_estimate)/(1+exp(census_data$logodds_estimate))
 
+# Sum up the probability of voting for Trump for each stratum
 census_data <- census_data %>%
   mutate(elect_predict_prob = estimate * n) 
 ```
@@ -165,22 +168,27 @@ Trump_prob
 ```
 
 
-### Joe Biden ###
++ Joe Biden
+
 ```{r}
 # Creating the Model
-model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
+model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + 
+                           state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-# summary(model_logit_biden) #, or
-kbl(broom::tidy(model_logit_biden))
+kable(broom::tidy(model_logit_biden), "latex", booktabs = T) %>% 
+  kable_styling(latex_options = c("striped", "scale_down"))
 ```
 
 ```{r}
+# Apply the fitted model to census_data, and get the log odds estimates
 census_data$logodds_estimate2 <- model_logit_biden%>%
   predict(newdata = census_data)
 
+# Calculate the probability of voting for Biden for individuals within each stratum
 census_data$estimate2 <- exp(census_data$logodds_estimate2)/(1+exp(census_data$logodds_estimate2))
 
+# Sum up the probability of voting for Biden for each stratum
 census_data <- census_data %>%
   mutate(elect_predict_prob2 = estimate2 * n) 
 ```
@@ -199,11 +207,12 @@ polling <- census_data%>%
   distinct() %>%
   mutate(trump_victory = ifelse(state_poll_trump > state_poll_biden, 1, 0)) %>%
   mutate(biden_victory = ifelse(state_poll_biden > state_poll_trump, 1, 0))
-polling$state_name
+
 polling$num_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
 
-View(polling)
+# View(polling)
 ```
+
 ```{r}
 sum(polling$trump_victory * polling$num_votes)
 sum(polling$biden_victory * polling$num_votes)
