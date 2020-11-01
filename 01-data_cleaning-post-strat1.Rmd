@@ -56,7 +56,7 @@ reduced_census_data <- reduced_census_data %>%
   filter(state_name != "district of columbia") %>%
   filter(race_ethnicity != "two major races") %>%
   filter(race_ethnicity != "three or more major races") %>%
-  filter(as.double(age) > 17) %>%
+  filter(as.double(age) > 16) %>%
   filter(age != "less than 1 year old")
 
 reduced_census_data$gender <- ifelse(reduced_census_data$gender=="male", "Male", "Female")

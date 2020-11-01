@@ -67,7 +67,7 @@ reduced_survey_data<-reduced_survey_data %>%
   #Convert state abbreviations to names
   mutate(state_name = state.name[match(state, state.abb)]) %>% 
   # select variables in interest
-  dplyr::select(vote_2016, gender, age, race_ethnicity, employment, state_name, vote_trump, vote_biden) %>%
+  dplyr::select(gender, age, race_ethnicity, employment, state_name, vote_trump, vote_biden) %>%
   na.omit()
 
 reduced_survey_data$employment <- ifelse(reduced_survey_data$employment=="Full-time employed", "Employed", 

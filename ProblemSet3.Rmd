@@ -11,6 +11,7 @@ output:
 ```{r setup, include=FALSE}
 library(tidyverse)
 library(visdat)
+library(kableExtra)
 
 # Loading in the cleaned survey Data
 survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/survey_data.csv")
@@ -19,53 +20,108 @@ survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA3
 census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv") %>%
   na.omit()
 ```
-```{r}
-nrow(census_data)
-```
 
 
 
 
-# Title of your Report
+### Code and data supporting this analysis is available at: 
+https://github.com/yangyu77/STA304_PS3.git
 
-### Authors: Jiaheng Li, Anni Lin, Yuechen Shen, Yuxin Yang
-### Date: Oct. 27 2020
-### Code and data supporting this analysis is available at: https://github.com/yangyu77/STA304_PS3.git
 
-As the U.S. presidential election day approaches, many people are increasingly concerning about the election results. We are interested in seeing if Dodald Trump would win the 2020 re-election race with Democrat Joe Biden, thus we choose to build a model to predict the popular vote of the 2020 U.S. election based on the Democracy Fund + UCLA Nationscape data and the American Community Surveys (ACS) data. 
+Who will win the election? Trump or Biden? As the U.S. presidential election day approaches, many people are increasingly concerning about the election results. We are interested in seeing if Dodald Trump would win the 2020 re-election race with Democrat Joe Biden, thus we choose to use a regression model to predict the popular vote outcome of the 2020 U.S. election based on the Democracy Fund + UCLA Nationscape data and the American Community Surveys (ACS) data. 
 
-+ The Democracy Fund + UCLA Nationscape data:
+## Overview: Data Sets After Data Cleaning
+
++ **The Democracy Fund + UCLA Nationscape data (`survey_data`):**
+
 *Tausanovitch, Chris and Lynn Vavreck. 2020. Democracy Fund + UCLA Nationscape, October 10-17, 2019 (version 20200814). Retrieved from [https://www.voterstudygroup.org/downloads?key=ae440528-c8e4-488f-a153-58e9244de17e].*
+```{r, echo=FALSE}
+kbl(head(survey_data), booktabs = T)
+```
+The Democracy Fund + UCLA Nationscape data set was collected from a public opinion survey project. The original data set contains variables for the political news sources, the political views, the vote choice for 2016 election, the basic demographic information, the employment status, and the state each respondent lives in. 
 
-+ The American Community Surveys:
+We pick the gender, the age, the race, the employment status, and the state as the predictor variables, and "whether vote for Trump" as well as "whether vote for Biden" as the response variables to build models. The cleaned data set `survey_data` contains 6,445 observations (rows) in total. We note that the original Nationscape data set also includes the vote choice for 2016 election, which could be a good predictor for the current election voting. However, we will not include this variable in the models, because the ACS data set does not include vote choice variable while we need the two data sets to match exactly for model prediction. 
+
+
++ **The 2018 American Community Surveys (`census_data`):**
+
 *Steven Ruggles, Sarah Flood, Ronald Goeken, Josiah Grover, Erin Meyer, Jose Pacas and Matthew Sobek. IPUMS USA: Version 10.0 [dataset]. Minneapolis, MN: IPUMS, 2020. https://doi.org/10.18128/D010.V10.0*
+```{r, echo=FALSE}
+kbl(head(census_data), booktabs = T) 
+```
+The original ACS data set contains a comprehensive set of variables for demographic information, including age, sex, race, employment status, educational attainment, and the name of the state. It also incudes information in household level. The raw data set contains 3,214,539 observations, thus it is representative for the entire U.S. population. 
 
-The Democracy Fund + UCLA Nationscape data was collected from a public opinion survey project. It contains variables for the vote intention for 2020 election, the age, the gender, the race, the employment status of each interviewee, and the state they are living in. The picked data set contains 6,445 observations (rows) in total. 
-The ACS data set contains variable for age, gender, the race, the employment status, and the name of the state. This raw data set contains 3,214,539 observations, thus it is representative for the entire U.S. population. 
+In order to make prediction using the fitted model, we need to pick variables that match the predictor variables in the model. Therefore, we pick the equivalent predictor variables as the `survey_data`, which are the gender, age, race, employment status, and the state name. We modify the categories for some variables to get an exact match of variables from the two data sets. We also exclude respondents aged less than 16, because they are ineligible for voting up until 2020. 
 
-We will build logistic regression models based on the Democracy Fund + UCLA Nationscape data, and apply the fitted models to the ACS data set to make predictions for the popular vote outcome. We will also utilize a post-stratification technique. We note that the Nationscape data also includes the vote choice for 2016 election, which could be a good predictor for the current election voting. However, we will not include this variable in the models, because the ACS data set does not include vote choice variable while we need the two data sets to match exactly for prediction. 
-
+The cleaned data set `census_data` is already post-stratified. The column variable `n` represents the number of respondents within the same group of state, gender, age, race, and employment status.
 
 
 
-# Model
 
-Here we are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we are employing a post-stratification technique. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
+
+## Model
+
+We are interested in predicting the popular vote outcome of the 2020 American federal election (include citation). To do this we will build *two* binary logistic regression models based on the Democracy Fund + UCLA Nationscape data (the `survey_data`), and apply the fitted models to the ACS data set (the `census_data`) to make predictions for proportion of voters who advocate Donald Trump/Biden, in another words, the probability of Trump/Biden wining the election. We will also utilize a post-stratification technique to account for any under-represented groups in the voting population. In the following sub-sections I will describe the model specifics and the post-stratification calculation.
+
+For the explanatory variables, we will be using age, which is recorded as a numeric variable, and gender, race, employment status, states as categorical variables to model the probability of voters voting for Donald Trump or Joe Biden. 
+
+The five predictor variables are:
+$x_{age}$: a numeric variable, representing the age of the respondent.
+$x_{gender}$: the gender identity of the respondent in the Nationscape survey study, which is either male or female.
+$x_{race\_ethnicity}$: the single race that the respondent belongs to in terms of anthropological concept. This variable has 6 categories:
+1. White; 
+2. Black or African American; 
+3. American Indian or Alaska Native;
+4. East Asian;
+5. Other Asian or Pacific Islander;
+6. Other.
+$x_{employment}$: the employment status of the respondent. This variable has 5 categories:
+1. Employed; 
+2. Unemployed; 
+3. Not in labor force;
+4. Student;
+5. Other.
+* Homemaker, retired people, and disabled individuals are categorized as "not in labor force".
+$x_{state\_name}$: the state that the respondent live in. This variable includes all US states except the District of Colombia and Puerto Rico.
+
+
+The logistic regression models we are using is:
+
++ Donald Trump:
+$$ y_{vote\_trump} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
+Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
+
++ Joe Biden:
+$$ y_{vote\_biden} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
+Where $y$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
+
+$\beta_0$ represents the intercept of the model. 
+
+$\beta_1$ represents the relationship between whether vote for Trump and the voter's gender. For every male voter, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
+
+$\beta_2$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_2$ increase in the probability of voting for Donald Trump.
+
+
 
 
 ## Model Specifics
-We will be using a logistic regression model to model the proportion of voters who will vote for Donald Trump. This is a naive model. I will only be using age, which is recorded as a numeric variable, to model the probability of voting for Donald Trump. The logistic regression model we are using is:
+We use the binary logistic regression model, because our response variable `vote_trump` is binary, representing whether or not the respondent will vote for Trump. It is exactly the model to be used when the dependent variable is binary (0/1, True/False, Yes/No). Moreover, the logistic regression is a classification algorithm which enable us to find the probability of event to be a success or a failure. It supports categorizing data into discrete classes by studying the relationship from a given set of labelled data.[1] 
 
-$$ y = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
+For the explanatory variables, we will be using age, which is recorded as a numeric variable, and gender, race, employment status, states as categorical variables to model the probability of voters voting for Donald Trump or Joe Biden. 
 
-Where $y$ represents the proportion of voters who will vote for Donald Trump. Similarly, $\beta_0$ represents the intercept of the model, and is the probability of voting for Donald Trump at age 0. Additionally, $\beta_1$ represents the slope of the model. So, for everyone one unit increase in age, we expect a $\beta_1$ increase in the probability of voting for Donald Trump.
+The logistic regression model we are using is:
+
+$$ y_{vote\_trump} = \beta_0 + \beta_1 x_{gender} + \beta_2 x_{age} + \beta_3 x_{race\_ethnicity} + \beta_4 x_{employment} + \beta_5 x_{state\_name} + \epsilon$$
+
+Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
+
+
 ```{r}
 # Creating the Model
 model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-# summary(model_logit_trump) #, or
-broom::tidy(model_logit_trump)
+kbl(broom::tidy(model_logit_trump))
 ```
 
 ```{r}
@@ -91,7 +147,7 @@ model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment
 
 # Model Results (to Report in Results section)
 # summary(model_logit_biden) #, or
-broom::tidy(model_logit_biden)
+kbl(broom::tidy(model_logit_biden))
 ```
 
 ```{r}
