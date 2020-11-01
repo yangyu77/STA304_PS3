@@ -218,6 +218,24 @@ sum(polling$trump_victory * polling$num_votes)
 sum(polling$biden_victory * polling$num_votes)
 ```
 
+
+## Post-Stratification:
+
+Post Stratification is the process that we use models which create based on the sample population to estimate our target population. In here, we use multilevel logistic regression with poststratification to estimate the result of 2020 U.S. presidential election by using the logistic model which are based on our sample data. The technique of Post Stratification is very useful, because firstly "it allows the estimating of preference within a specific locality based on a survey taken across a wider area that includes relatively few people from the locality in question, or where the sample may be highly unrepresentative"[2], in addition, we can analyze and build models in a small but representative data set, and then use these to make predictions in a large data set, which can make the statistical analysis less expensive and not take too much time. 
+
+Our cell splits into the sample data are including gender, age, race, employment, states. Firstly, the reason why we choose gender is that after learning about some news about the election, we saw some reports that some of the Trump team’s actions were against feminism. On the other hand, it was a woman who ran for vice president with Biden, so we think the variable "gender" is one that will affect the results of the election. 
+
+Secondly, we choose "age" because we found that older Americans are more likely to approve and support Trump’s campaign philosophy, at the same time, "Biden has not only coalesced support among young voters, he has become more popular with them, the new survey found. In the spring 2020 poll, Biden had a 34% approval rating among young voters, but that number has risen to 47% among all youth and 56% among likely voters in that age group, the IOP found."[https://www.usnews.com/news/elections/articles/2020-10-26/biden-bolsters-lead-over-trump-among-young-voters]
+s
+Moreover, for "race", we believe that this will be one of the hot topics in the 2020 election, because, in 2020, we know that the police killing of George Floyd in Minneapolis on June 4. This incident directly caused the American people to march in the streets to resist the unfair treatment of black people in the United States. This incident has once again pushed the opposition to racial discrimination to a climax. Therefore, it will affect the 2020 presidential election.
+
+In addition, during the Trump administration, he has been committed to increasing employment opportunities in the United States and providing more job opportunities for the people. For example, he has been asking American companies to move production plants from developing countries back to the United States. Hence, Those Americans who are unemployed at home are more likely to support Trump. On the contrary, the top executives and bosses of those companies may not support Trump because their costs are forced to increase a lot.
+
+Finally, we also choose "state", because, in previous general elections, presidential candidates have gone back to fight for the support of the states, especially some major states with more voice, such as California, because the support of these major states may influence the outcome of the entire election. Therefore, we select the variable "state" to be in our cell splits of this post-stratification.
+
+# Results
+
+We use multilevel logistic model with Post Stratification which account for gender, age, race, employment and states to estimate that the proportion of voters in favour of voting for Donald Trump to be 41.5% and we also use the same way to estimate that the proportion of voters in favour of voting for Biden to be 40.8%. The total result is that Donald Trump will win in the 2020 presidential election.
 # Discussion
 
 ## Summary
@@ -246,5 +264,21 @@ Base on the analysis and relationships that the five variables present, each can
 ## Weakness and Next Step
 The weakness of this analysis is the variable part, the variables that we pick are all very relevant and closely related with the response variable, in each bar graph, we do see a difference in supporters of the two candidates, however, the results are too similar in most cases. Which makes it hard to differentiate who has a slight advantage when comparing with a certain variable. Let’s take the variable age for example, we have constructed five vertical bars for each candidate, the result turns out that Trump has more volume in two of the bars and Biden also has more volume in the other two bars, so the result evens out, which is hard to come up with a conclusion or to discuss who actually stands out. 
 In terms of next step, there are two things that can be improved, one is finding a variable that can clearly differentiates a result between the two candidates. The other is about graphing the plot, in this report, for a more direct and simple view of the graph, the proportion of vote and no vote is stacked on each other, which takes some time to compare who has greater value than the other. Next time we will try putting them side by side, although that could take up more space and makes the graph more complex, we think this might be able to provide a straighter forward comparison. 
+
+# Reference
+
+[1] GeeksForGeeks, A., AmiyaRanjanRout, &amp; GeeksForGeeks, T. (2020, September 02). Advantages and Disadvantages of Logistic Regression. Retrieved November 01, 2020, from https://www.geeksforgeeks.org/advantages-and-disadvantages-of-logistic-regression/
+
+[2] Multilevel regression with poststratification. (2020, October 14). Retrieved November 01, 2020, from https://en.wikipedia.org/wiki/Multilevel_regression_with_poststratification
+
+[3] Biden Bolsters Lead Over Trump Among Young Voters. (n.d.). Retrieved November 01, 2020, from https://www.usnews.com/news/elections/articles/2020-10-26/biden-bolsters-lead-over-trump-among-young-voters
+
+[4] Charles. (2019, July 14). Trump's Tweets Prove That He Is a Raging Racist. Retrieved November 01, 2020, from https://www.nytimes.com/2019/07/14/opinion/trump-twitter-racism.html?_ga=2.154681726.756034816.1604194097-739269052.1604194097
+
+[5] Team, R. (2020, September 23). US 2020 election: The economy under Trump in six charts. Retrieved November 01, 2020, from https://www.bbc.com/news/world-45827430
+
+[6] Sokolove, M. (2020, October 23). Why Does Trump Win With White Men? Retrieved November 01, 2020, from https://www.nytimes.com/2020/10/23/opinion/sunday/gender-gap-2020-election.html
+
+[7] Barry, E. (n.d.). The 2020 Battleground States: Updates on the Swing Voters. Retrieved November 01, 2020, from https://www.nytimes.com/live/2020/battleground-states-2020-election
 
 
