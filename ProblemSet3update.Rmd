@@ -136,10 +136,20 @@ where $y$ represents the probability of voters to vote for Joe Biden in the 2020
 
 ## Model Fitting
 
-+ Donald Trump
+We use R function glm() for creating the multilevel binary logistic regression models.
+$$model = glm(vote\_trump \sim gender + age + race\_ethnicity + employment + state\_name, data = survey\_data, binomial)$$
+
+$$model = glm(vote\_biden \sim gender + age + race\_ethnicity + employment + state\_name, data = survey\_data, binomial)$$
+
+Then we apply the fitted model to census_data, and get the log odds estimates. Since we are using logistic models, the estimate that we get directly from the model prediction are the log transformation of the success-failure probability ratio. We need to do further calculation to get the true probability of Trump winning the election.
+
+Next, we calculate the probability of voting for Trump/Biden for each individual. We have constructed strata in the `census_data` using the poststratification technique. It basically divides individual respondents into different groups (strata) based on certain characteristics, such as the sociodemographic information. This technique allows us to take the groups that are under-represented into account and minimize the effects brought by the over-represented groups in the `survey_data`.
+
+At the final step, we sum the probability of voting for Trump of individual U.S. residents and divide the sum by the total number of the residents that are included in the census data set. The final number we get is the prediction of the popular vote outcome. 
+
++ **Donald Trump**
 
 ```{r, echo=FALSE}
-# Create the Model
 model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + 
                            state_name, data = survey_data, binomial)
 
@@ -149,14 +159,11 @@ kable(broom::tidy(model_logit_trump), "latex", booktabs = T) %>%
 ```
 
 ```{r, echo=FALSE}
-# Apply the fitted model to census_data, and get the log odds estimates
 census_data$logodds_estimate <- model_logit_trump%>%
   predict(newdata = census_data)
 
-# Calculate the probability of voting for Trump for individuals within each stratum
 census_data$estimate <- exp(census_data$logodds_estimate)/(1+exp(census_data$logodds_estimate))
 
-# Sum up the probability of voting for Trump for each stratum
 census_data <- census_data %>%
   mutate(elect_predict_prob = estimate * n) 
 ```
@@ -167,7 +174,7 @@ Trump_prob
 ```
 
 
-+ Joe Biden
++ **Joe Biden**
 
 ```{r, echo=FALSE}
 # Creating the Model
@@ -198,6 +205,10 @@ Biden_prob <- sum(census_data$elect_predict_prob2)/sum(census_data$n)
 Biden_prob
 ```
 
+
+We have also predicted the electoral vote outcome based on our models. We predict that Trump will get 280 votes while Biden will get 255 votes. The prediction exclude the District of Columbia, because the data for this region is not in the
+Nationscape data set, which we used for building models.
+
 ```{r, echo=FALSE}
 polling <- census_data%>%
   group_by(state_name) %>%
@@ -221,9 +232,9 @@ sum(polling$biden_victory * polling$num_votes)
 
 ## Post-Stratification:
 
-Post Stratification is the process that we use models which create based on the sample population to estimate our target population. In here, we use multilevel logistic regression with poststratification to estimate the result of 2020 U.S. presidential election by using the logistic model which are based on our sample data. The technique of Post Stratification is very useful, because firstly "it allows the estimating of preference within a specific locality based on a survey taken across a wider area that includes relatively few people from the locality in question, or where the sample may be highly unrepresentative"[2], in addition, we can analyze and build models in a small but representative data set, and then use these to make predictions in a large data set, which can make the statistical analysis less expensive and not take too much time. 
+Post-Stratification is the process that we use models, which create based on the sample population, to estimate our target population. We use multilevel logistic regression with poststratification to estimate the result of the 2020 U.S. presidential election by using the logistic model which is created based on the smaller-sized survey data. The technique of Post Stratification is very useful, because firstly "it allows the estimating of preference within a specific locality based on a survey taken across a wider area that includes relatively few people from the locality in question, or where the sample may be highly unrepresentative"[2], in addition, we can analyze and build models in a small but representative data set, and then use these to make predictions in a large data set, which can make the statistical analysis less expensive and not take too much time. 
 
-Our cell splits into the sample data are including gender, age, race, employment, states. Firstly, the reason why we choose gender is that after learning about some news about the election, we saw some reports that some of the Trump team’s actions were against feminism. On the other hand, it was a woman who ran for vice president with Biden, so we think the variable "gender" is one that will affect the results of the election. 
+We split the observations into strata based on gender, age, race, employment, states. First, the reason why we choose gender is that, after learning some news about the election, we saw reports that some of the actions of the Trump team were against feminism. The female voters would reasonably have lower probability to vote for Trump compare to males. On the other hand, it was a woman who ran for vice president with Biden, so we think the variable "gender" may affect the results of the election. 
 
 Secondly, we choose "age" because we found that older Americans are more likely to approve and support Trump’s campaign philosophy, at the same time, "Biden has not only coalesced support among young voters, he has become more popular with them, the new survey found. In the spring 2020 poll, Biden had a 34% approval rating among young voters, but that number has risen to 47% among all youth and 56% among likely voters in that age group, the IOP found."[https://www.usnews.com/news/elections/articles/2020-10-26/biden-bolsters-lead-over-trump-among-young-voters]
 s
