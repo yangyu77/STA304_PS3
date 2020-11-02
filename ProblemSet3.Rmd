@@ -99,6 +99,7 @@ P.S. Homemaker, retired people, and disabled individuals are categorized as "not
 $x_{state\_name}$: the state that the respondent live in. This variable includes all US states except the District of Colombia and Puerto Rico.
 
 
+
 **The logistic regression models we are using are:**
 
 + Donald Trump:
