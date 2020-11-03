@@ -1,10 +1,13 @@
 ---
-title: "Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression and Post-stratification"
+title: Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression
+  and Post-stratification
 author: "Jiaheng Li, Yuechen Shen, Yuxin Yang"
 date: "27/10/2020"
 output:
   pdf_document:
     latex_engine: xelatex
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
@@ -16,6 +19,7 @@ library(tinytex)
 
 # Loading in the cleaned survey Data
 survey_data <- read_csv("survey_data.csv")
+survey_data1 <- read_csv("survey_data.csv")
 
 # Loading in the cleaned census Data
 census_data <- read_csv("census_data.csv") %>%
@@ -101,7 +105,7 @@ $x_{state\_name}$: the state that the respondent live in. This variable includes
 **The logistic regression models we are using are:**
 
 + Donald Trump:
-$$ y_{vote\_trump} = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
+$$ log(\frac{p}{1-p}) = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
 $$ \beta_6 X_{Other Asian or Pacific Islander} + \beta_7 X_{White} + \beta_8 X_{NotInLaborForce} + \beta_9 X_{employmentOther} + \beta_{10} X_{Student} +$$
 $$\beta_{11} X_{Unemployed} + \beta_{12} X_{Alaska} + \beta_{13} X_{Arizona} + \beta_{14} X_{Arkansas} + \beta_{15} X_{California} + \beta_{16} X_{Colorado} + $$
 $$\beta_{17} X_{Connecticut} + \beta_{18} X_{Delaware} + \beta_{19} X_{Florida} + \beta_{20} X_{Georgia} + \beta_{21} X_{Hawaii} +  \beta_{22} X_{Idaho} + \beta_{23} X_{Illinois} +$$ 
@@ -245,46 +249,112 @@ polling <- census_data%>%
   mutate(trump_victory = ifelse(state_poll_trump > state_poll_biden, 1, 0)) %>%
   mutate(biden_victory = ifelse(state_poll_biden > state_poll_trump, 1, 0))
 
-polling$num_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
-
-polling
+polling$electoral_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
 ```
 
 ```{r, echo=FALSE}
-sum(polling$trump_victory * polling$num_votes)
-sum(polling$biden_victory * polling$num_votes)
+sum(polling$trump_victory * polling$electoral_votes)
+sum(polling$biden_victory * polling$electoral_votes)
 ```
 We have also predicted the electoral vote outcome based on our models. We predict that Trump will get 280 votes while Biden will get 255 votes. The prediction exclude the District of Columbia, because the data for this region is not in the
 Nationscape data set, which we used for building models.
 
 In general, we use multilevel logistic model with Post Stratification which account for gender, age, race, employment and states to estimate that the proportion of voters in favour of voting for Donald Trump to be 41.4% and we also use the same way to estimate that the proportion of voters in favour of voting for Biden to be 40.8%. The total result is that Donald Trump will win in the 2020 presidential election.
 
-## Predictor
+\newpage
+
+## Graphs showing the popular vote outcome by groups after post-stratification
+We plot the predicted popular votes based on different group characteristics.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t3 <- census_data %>%
+  group_by(gender) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t3 %>%
+  ggplot(aes(gender, Trump, Biden, group=1)) + 
+  geom_line(aes(x = gender, y = Trump), color = "red") + 
+  geom_line(aes(x = gender, y = Biden), color = "blue") + 
+  labs(x= "Gender", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by gender")
+```
+
+From the above plot, we see that the female voters do support Biden significantly more than Trump, while the male voters do the opposite.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t4 <- census_data %>%
+  group_by(age) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t4 %>%
+  ggplot(aes(age, Trump, Biden, group=1)) + 
+  geom_line(aes(x = age, y = Trump), color = "red") + 
+  geom_line(aes(x = age, y = Biden), color = "blue") + 
+  labs(x= "Gender", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by age")
+```
+
+From the above plot, we can see that the young population support Biden more yet they have overal lower voting probability than the older population. While senior people advocate Trump, the oldest population show strong preference for the Democrats.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t1 <- census_data %>%
+  group_by(race_ethnicity) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t1 %>%
+  ggplot(aes(race_ethnicity, Trump, Biden, group=1)) + 
+  geom_line(aes(x = race_ethnicity, y = Trump), color = "red") + 
+  geom_line(aes(x = race_ethnicity, y = Biden), color = "blue") + 
+  labs(x= "Race and ethnicity", y= "Probability of voting") + 
+  theme(axis.text.x = element_text(angle = 20)) +
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by races")
+```
+
+From the above plot, we see that White people and American Indian or Alaska Native people have a higher probability to vote for Trump, while the other races have a higher probability to vote Biden. The Afriican American population has the highest probability among these races.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t2 <- census_data %>%
+  group_by(employment) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t2 %>%
+  ggplot(aes(employment, Trump, Biden, group=1)) + 
+  geom_line(aes(x = employment, y = Trump), color = "red") + 
+  geom_line(aes(x = employment, y = Biden), color = "blue") + 
+  labs(x= "Employment status", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability for Trump (red) / \n Biden (blue) by employment status")
+```
+
+From the above plot, we know that the probability for voting Biden span evenly across groups with different employment status. The probability of the unemployed people voting for Trump is about 10% lower than the other groups.
 
 ```{r fig1, out.width = '40%', echo=FALSE}
-ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_trump))
-ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_biden))
+ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_biden), position='dodge')
 ```
 
 From the above two plots, we can see that among people aged 18-40, Biden's supporters account for the majority. However, Trump has more supporters over 40 than Biden.
 
 ```{r fig2, out.width = '40%', echo=FALSE}
-ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_trump))
-ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_biden))
+ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_biden), position='dodge')
 ```
 
 It can be seen from these two plots that, except for students, the number of supporters of Trump and Biden in the other employment statuses is similar. For student, most of student choose to vote for Biden.
 
 ```{r fig3, out.width = '40%', echo=FALSE}
-ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_trump))
-ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_biden))
+ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_biden), position='dodge')
 ```
 
 To start off, the bar graph we have constructed using race ethnicity clearly shows that majority of the race in the U.S is white, followed by the second largest race which is African American, however, we can observe from the bar graph that the total number of white people in the U.S is approximately 6 times the total population of African American, which means that the vote results will rely heavily on the white people population because they are the majority in the U.S. By comparing the blue bars, we see that Trump has a slightly higher bar volume compare to Biden.
 
 ```{r fig4, out.width = '40%', echo=FALSE}
-ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_trump))
-ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_biden))
+ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_biden), position='dodge')
 ```
 
 It can be seen from these two plots that more women will vote for Biden, while on the other hand, more men will vote for Trump
