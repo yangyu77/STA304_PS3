@@ -1,9 +1,11 @@
 ---
-title: "Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression and Post-stratification"
-author: "Jiaheng Li, Yuechen Shen, Yuxin Yang"
+title: Trump's Victory? Predicting the 2020 Presidential Election Using Logistic Regression
+  and Post-stratification
+author: "Jiaheng Li, Yuechen Shen, Yuxin Yang, ANNI LIN"
 date: "27/10/2020"
 output:
-  pdf_document: default
+  pdf_document:
+    latex_engine: xelatex
   html_document:
     df_print: paged
 ---
@@ -12,16 +14,17 @@ output:
 library(tidyverse)
 library(visdat)
 library(kableExtra)
+library(tinytex)
+#tinytex::install_tinytex()
 
 # Loading in the cleaned survey Data
-survey_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/survey_data.csv")
+survey_data <- read_csv("survey_data.csv")
+survey_data1 <- read_csv("survey_data.csv")
 
 # Loading in the cleaned census Data
-census_data <- read_csv("/Users/yangyuxin/Downloads/UofT 2018-2022/Academic/STA304/STA304_PS3/census_data.csv") %>%
+census_data <- read_csv("census_data.csv") %>%
   na.omit()
 ```
-
-
 
 
 *Code and data supporting this analysis is available at: *
@@ -99,11 +102,10 @@ P.S. Homemaker, retired people, and disabled individuals are categorized as "not
 $x_{state\_name}$: the state that the respondent live in. This variable includes all US states except the District of Colombia and Puerto Rico.
 
 
-
 **The logistic regression models we are using are:**
 
 + Donald Trump:
-$$ y_{vote\_trump} = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
+$$ log(\frac{p}{1-p}) = \beta_0  + \beta_1 X_{male} + \beta_2 X_{age} + \beta_3 X_{Black or African American} + \beta_4 X_{East Asian} + \beta_5 X_{raceOther} + $$ 
 $$ \beta_6 X_{Other Asian or Pacific Islander} + \beta_7 X_{White} + \beta_8 X_{NotInLaborForce} + \beta_9 X_{employmentOther} + \beta_{10} X_{Student} +$$
 $$\beta_{11} X_{Unemployed} + \beta_{12} X_{Alaska} + \beta_{13} X_{Arizona} + \beta_{14} X_{Arkansas} + \beta_{15} X_{California} + \beta_{16} X_{Colorado} + $$
 $$\beta_{17} X_{Connecticut} + \beta_{18} X_{Delaware} + \beta_{19} X_{Florida} + \beta_{20} X_{Georgia} + \beta_{21} X_{Hawaii} +  \beta_{22} X_{Idaho} + \beta_{23} X_{Illinois} +$$ 
@@ -115,7 +117,7 @@ $$\beta_{48} X_{Pennsylvania} + \beta_{49} X_{Rhode Island} + \beta_{50} X_{Sout
 $$\beta_{54} X_{Utah} + \beta_{55} X_{Vermont} + \beta_{56} X_{Virginia} + \beta_{57} X_{Washington} + \beta_{58} X_{West Virginia} + \beta_{59} X_{Wisconsin} + \beta_{60} X_{Wyoming} + \epsilon$$ 
 
 
-Where $y$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
+Where $p$ represents the probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election. $vote\_trump=1$ denotes "will vote for Trump", while $vote\_trump=0$ denotes "will not vote for Trump".
 
 $\beta_0$ represents the intercept of the model. 
 
@@ -133,55 +135,92 @@ $\beta_{11}$ to $\beta_{60}$ represents the relationship between whether vote fo
 + Joe Biden:
 
 The model is the same as the model for Trump, except that the response variable is `vote\_biden`,
-where $y$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
+where $p$ represents the probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election. $vote\_biden=1$ denotes "will vote for Biden", while $vote\_trump=0$ denotes "will not vote for Biden".
 
+
+## Post-Stratification:
+
+Post-Stratification is the process that we use models, which create based on the sample population, to estimate our target population. We use multilevel logistic regression with poststratification to estimate the result of the 2020 U.S. presidential election by using the logistic model which is created based on the smaller-sized survey data. The technique of Post Stratification is very useful, because firstly "it allows the estimating of preference within a specific locality based on a survey taken across a wider area that includes relatively few people from the locality in question, or where the sample may be highly unrepresentative"[2], in addition, we can analyze and build models in a small but representative data set, and then use these to make predictions in a large data set, which can make the statistical analysis less expensive and not take too much time. 
+
+We split the observations into strata based on gender, age, race, employment, states. First, the reason why we choose gender is that, after learning some news about the election, we saw reports that some of the actions of the Trump team were against feminism. Besides, Biden has picked a female, Klama Harris, as his running mate. It is reasonable that the female voters would have lower probability to vote for Trump and advocate Biden more. Therefore, we think the variable "gender" is a significant factor affecting the results of the election. 
+
+Secondly, we choose "age" because we found that older Americans are more likely to approve and support Trump’s campaign philosophy. Meanwhile, "Biden has coalesced support among young voters, and he has become more popular with them. The IOP survey found that Biden had a 34% approval rating among young voters in the spring 2020 poll, but that number has risen to 47% among all youth and 56% among likely voters in that age group. [https://www.usnews.com/news/elections/articles/2020-10-26/biden-bolsters-lead-over-trump-among-young-voters]
+
+Moreover, we pick the variable "race" as we believe that it will be one of the hot topics in the 2020 election. We know the police killing of George Floyd in Minneapolis on June 4. This incident directly caused the U.S. people to march in the streets to resist the unfair treatment of black people in the United States. This incident has once again pushed the opposition to racial discrimination to a climax. Therefore, we think the race of voters will affect the voting during the 2020 presidential election.
+
+In addition, during the Trump administration, he has been committed to increasing employment opportunities in the United States and providing more job opportunities for the people. For example, he has been asking American companies to move production plants from developing countries back to the United States. Hence, Those Americans who are unemployed at home are more likely to support Trump. On the contrary, the top executives and bosses of those companies may not support Trump because their costs are forced to increase a lot.
+
+Finally, we also choose "state", because, in previous general elections, presidential candidates have gone back to fight for the support of the states, especially some major states with more voice, such as California, because the support of these major states may influence the outcome of the entire election. Therefore, we select the variable "state" to be in our cell splits of this post-stratification.
+
+# Results
 
 ## Model Fitting
 
-+ Donald Trump
+We use R function glm() for creating the multilevel binary logistic regression models.
+$$model = glm(vote\_trump \sim gender + age + race\_ethnicity + employment + state\_name, data = survey\_data, binomial)$$
+$$model = glm(vote\_biden \sim gender + age + race\_ethnicity + employment + state\_name, data = survey\_data, binomial)$$
 
-```{r}
-# Create the Model
+Then we apply the fitted model to census_data, and get the log odds estimates. Since we are using logistic models, the estimate that we get directly from the model prediction are the log transformation of the success-failure probability ratio. We need to do further calculation to get the true probability of Trump winning the election.
+
+Next, we calculate the probability of voting for Trump/Biden for each individual. We have constructed strata in the `census_data` using the poststratification technique. It basically divides individual respondents into different groups (strata) based on certain characteristics, such as the sociodemographic information. This technique allows us to take the groups that are under-represented into account and minimize the effects brought by the over-represented groups in the `survey_data`.
+
+At the final step, we sum the probability of voting for Trump of individual U.S. residents and divide the sum by the total number of the residents that are included in the census data set. The final number we get is the prediction of the popular vote outcome. 
+
++ **Donald Trump**
+
+```{r, echo=FALSE}
+survey_data1$age[survey_data1$age <= 20] <- "0-20"
+survey_data1$age[20.1 <= survey_data1$age  & survey_data1$age<= 40] <- "20-40"
+survey_data1$age[40.1 <= survey_data1$age  & survey_data1$age<= 60] <- "40-60"
+survey_data1$age[60.1 <= survey_data1$age  & survey_data1$age<= 80] <- "60-80"
+survey_data1$age[80.1 <= survey_data1$age] <- "80-100"
+survey_data1$vote_trump[survey_data1$vote_trump == 1] <- "1"
+survey_data1$vote_trump[survey_data1$vote_trump == 0] <- "0"
+survey_data1$vote_biden[survey_data1$vote_biden == 1] <- "1"
+survey_data1$vote_biden[survey_data1$vote_biden == 0] <- "0"
+survey_data1$age[40.1 <= survey_data1$age  & survey_data1$age<= 60] <- "40-60"
+dd <- survey_data1
+dd <- dd[order(dd$age), ]
+#census_data$age[survey_data$age <= 20] <- "0-20"
 model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + 
                            state_name, data = survey_data, binomial)
 
 # Model Summary (to be reported in Results section)
-kable(broom::tidy(model_logit_trump), "latex", booktabs = T) %>% 
-  kable_styling(latex_options = c("striped", "scale_down"))
+kbl(broom::tidy(model_logit_trump), longtable = T, booktabs = T, caption = "Trump") %>% kable_styling(latex_options = c("repeat_header"))
 ```
 
-```{r}
-# Apply the fitted model to census_data, and get the log odds estimates
+```{r, echo=FALSE}
 census_data$logodds_estimate <- model_logit_trump%>%
   predict(newdata = census_data)
 
-# Calculate the probability of voting for Trump for individuals within each stratum
 census_data$estimate <- exp(census_data$logodds_estimate)/(1+exp(census_data$logodds_estimate))
 
-# Sum up the probability of voting for Trump for each stratum
 census_data <- census_data %>%
   mutate(elect_predict_prob = estimate * n) 
 ```
 
-```{r}
+The probability of voters to vote for Donald Trump in the 2020 U.S. Presidential Election is :
+```{r, echo=FALSE}
 Trump_prob <- sum(census_data$elect_predict_prob)/sum(census_data$n)
 Trump_prob
 ```
 
 
-+ Joe Biden
++ **Joe Biden**
 
-```{r}
+```{r, echo=FALSE}
 # Creating the Model
 model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + 
                            state_name, data = survey_data, binomial)
 
 # Model Results (to Report in Results section)
-kable(broom::tidy(model_logit_biden), "latex", booktabs = T) %>% 
-  kable_styling(latex_options = c("striped", "scale_down"))
+# model for vote_biden
+
+kbl(broom::tidy(model_logit_biden), longtable = T, booktabs = T, caption = "Biden") %>% kable_styling(latex_options = c("repeat_header"))
 ```
 
-```{r}
+
+```{r, echo=FALSE}
 # Apply the fitted model to census_data, and get the log odds estimates
 census_data$logodds_estimate2 <- model_logit_biden%>%
   predict(newdata = census_data)
@@ -194,12 +233,13 @@ census_data <- census_data %>%
   mutate(elect_predict_prob2 = estimate2 * n) 
 ```
 
-```{r}
+The probability of voters to vote for Joe Biden in the 2020 U.S. Presidential Election is :
+```{r, echo=FALSE}
 Biden_prob <- sum(census_data$elect_predict_prob2)/sum(census_data$n)
 Biden_prob
 ```
 
-```{r}
+```{r, echo=FALSE}
 polling <- census_data%>%
   group_by(state_name) %>%
   mutate(state_poll_trump = sum(elect_predict_prob)/sum(n)) %>%
@@ -209,14 +249,248 @@ polling <- census_data%>%
   mutate(trump_victory = ifelse(state_poll_trump > state_poll_biden, 1, 0)) %>%
   mutate(biden_victory = ifelse(state_poll_biden > state_poll_trump, 1, 0))
 
-polling$num_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
-
-# View(polling)
+polling$electoral_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
 ```
 
-```{r}
-sum(polling$trump_victory * polling$num_votes)
-sum(polling$biden_victory * polling$num_votes)
+```{r, echo=FALSE}
+sum(polling$trump_victory * polling$electoral_votes)
+sum(polling$biden_victory * polling$electoral_votes)
 ```
+We have also predicted the electoral vote outcome based on our models. We predict that Trump will get 280 votes while Biden will get 255 votes. The prediction exclude the District of Columbia, because the data for this region is not in the
+Nationscape data set, which we used for building models.
+
+In general, we use multilevel logistic model with Post Stratification which account for gender, age, race, employment and states to estimate that the proportion of voters in favour of voting for Donald Trump to be 41.4% and we also use the same way to estimate that the proportion of voters in favour of voting for Biden to be 40.8%. The total result is that Donald Trump will win in the 2020 presidential election.
+
+\newpage
+
+## Graphs showing the popular vote outcome by groups after post-stratification
+We plot the predicted popular votes based on different group characteristics.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t3 <- census_data %>%
+  group_by(gender) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t3 %>%
+  ggplot(aes(gender, Trump, Biden, group=1)) + 
+  geom_line(aes(x = gender, y = Trump), color = "red") + 
+  geom_line(aes(x = gender, y = Biden), color = "blue") + 
+  labs(x= "Gender", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by gender")
+```
+
+From the above plot, we see that the female voters do support Biden significantly more than Trump, while the male voters do the opposite.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t4 <- census_data %>%
+  group_by(age) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t4 %>%
+  ggplot(aes(age, Trump, Biden, group=1)) + 
+  geom_line(aes(x = age, y = Trump), color = "red") + 
+  geom_line(aes(x = age, y = Biden), color = "blue") + 
+  labs(x= "Gender", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by age")
+```
+
+From the above plot, we can see that the young population support Biden more yet they have overal lower voting probability than the older population. While senior people advocate Trump, the oldest population show strong preference for the Democrats.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t1 <- census_data %>%
+  group_by(race_ethnicity) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t1 %>%
+  ggplot(aes(race_ethnicity, Trump, Biden, group=1)) + 
+  geom_line(aes(x = race_ethnicity, y = Trump), color = "red") + 
+  geom_line(aes(x = race_ethnicity, y = Biden), color = "blue") + 
+  labs(x= "Race and ethnicity", y= "Probability of voting") + 
+  theme(axis.text.x = element_text(angle = 20)) +
+  ggtitle("Predicted popular vote probability \n for Trump (red) / Biden (blue) by races")
+```
+
+From the above plot, we see that White people and American Indian or Alaska Native people have a higher probability to vote for Trump, while the other races have a higher probability to vote Biden. The Afriican American population has the highest probability among these races.
+
+```{r, echo=FALSE, fig.height=3, fig.width=4}
+t2 <- census_data %>%
+  group_by(employment) %>%
+  summarise(Trump = sum(elect_predict_prob)/sum(n),
+            Biden = sum(elect_predict_prob2)/sum(n),
+            .groups = 'drop')
+t2 %>%
+  ggplot(aes(employment, Trump, Biden, group=1)) + 
+  geom_line(aes(x = employment, y = Trump), color = "red") + 
+  geom_line(aes(x = employment, y = Biden), color = "blue") + 
+  labs(x= "Employment status", y= "Probability of voting") + 
+  ggtitle("Predicted popular vote probability for Trump (red) / \n Biden (blue) by employment status")
+```
+
+From the above plot, we know that the probability for voting Biden span evenly across groups with different employment status. The probability of the unemployed people voting for Trump is about 10% lower than the other groups.
+
+```{r fig1, out.width = '40%', echo=FALSE}
+ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(age)) + geom_bar(aes(fill = vote_biden), position='dodge')
+```
+
+From the above two plots, we can see that among people aged 18-40, Biden's supporters account for the majority. However, Trump has more supporters over 40 than Biden.
+
+```{r fig2, out.width = '40%', echo=FALSE}
+ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(employment)) + geom_bar(aes(fill = vote_biden), position='dodge')
+```
+
+It can be seen from these two plots that, except for students, the number of supporters of Trump and Biden in the other employment statuses is similar. For student, most of student choose to vote for Biden.
+
+```{r fig3, out.width = '40%', echo=FALSE}
+ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(race_ethnicity)) + geom_bar(aes(fill = vote_biden), position='dodge')
+```
+
+To start off, the bar graph we have constructed using race ethnicity clearly shows that majority of the race in the U.S is white, followed by the second largest race which is African American, however, we can observe from the bar graph that the total number of white people in the U.S is approximately 6 times the total population of African American, which means that the vote results will rely heavily on the white people population because they are the majority in the U.S. By comparing the blue bars, we see that Trump has a slightly higher bar volume compare to Biden.
+
+```{r fig4, out.width = '40%', echo=FALSE}
+ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_trump), position='dodge')
+ggplot(dd, aes(gender)) + geom_bar(aes(fill = vote_biden), position='dodge')
+```
+
+It can be seen from these two plots that more women will vote for Biden, while on the other hand, more men will vote for Trump
+
+# Discussion
+
+## Summary
+The final goal of this analysis is to predict and estimate a result of whether Donald Trump or Biden will win the election and become the president of the U.S. In order to come with a valid and meaningful result, we have planned to use 5 independent/explanatory variables for the x axis, the dependent/response variable for the y axis is a binary variable “vote_trump”. For the five independent variables, we chose age, gender, race_ethnicity, state and employment, the reason why we value age, gender and race as three important variables are because people with different age, gender and race could have different preferences in picking the president, such as older people might favor more Biden over Trump, whereas younger generation might pick Trump over Biden. In terms of the other two variables, our group thinks that Trump and Biden have their own style and policies, which will affect people in different states and people in different work fields. Our group previously decided to use the variable household_income, however, we later determined that since household_income is a nominal variable that contains lots of different numbers, the binary variable employment is easier to analyze and make conclusions since it only contains the answer unemployed or employed, which makes the variable more straightforward. After finalizing the variables, we have used the sample data to create a logistic model to analyze the relationship between the independent and dependent variables and observe the results. Finally, taking the results and analyzing them from the logistic model, we use post stratification technique which allows us to use these sample data we have and outputs the estimate of who has a higher chance of becoming the president.
+
+## Conclusion
+
+### RACE
+According to the analysis and graphs we have constructed with the 5 variables; it suggests that Trump is likely to have more supports than Biden. One important fact that we obtain from this bar graph is that other race in the U.S votes Biden instead of Trump, which shows the fact that Trump is not being favored in other races, such as African American, Indian, Asian, etc. The reason behind that is because Trump has the idea of white supremacy, according to the report from The New York Times, On July 12th, Trump has verbally attacked four congresswomen saying that they should "return to their home country and help with their terrible government"[4]. This conflict clearly shows Trump’s unfriendly manner towards people that are not born in American and are not white, which is why Trump has very few supporters from other race compare to Biden. Overall, through the analysis of race, we can see that Trump has more white supporters whereas Biden has more supporters from other race as well, by approximately the values of these supporters, Trump and Biden will have very close results but Trump will be a little higher since the majority of the population in the U.S is white. 
+
+### Employment
+During the analysis of the variable employment, we see that the votes for both Trump and Biden are almost identical for employed people and people not in the labor force. The reason behind that is these population does not care too much about who becomes the president because none of the policies nor changes will greatly affect them anyways. However, we see that unemployed population supports Biden instead of Trump, BBC news explains that this is mainly because Trump’s action and policy during the Pandemic has caused "the highest unemployment rate in the recent 80 years"[5]. During the pandemic, Trump has played a poor role in aiding the U.S economic, as a result, many unemployed individuals and teenagers all lost confidence in Trump, which is why we see more votes in Biden than Trump in terms of employment. 
+
+### Age
+From the variable age, we can still see a similar result between both Trump and Biden, the major difference is at the population that is 20-40 years old. This can be related to the employment variable, majority of the population that is 20-40 years old are also in the labor force, as U.S economy is dramatically dropping during the pandemic and Trump seems to lack the ability to aid the economy and slows down the unemployment, younger generation people will turn to Biden instead for another try. Other age group have an even split in both Trump and Biden, due to the increasing younger generation people that votes for Biden, Biden has a slightly higher vote when analyzing the vote rate with age. 
+
+### Gender
+Through the analysis with gender and vote_trump, we clearly see a gender gap, Trump has more male supporters and Biden has more female supporters. Such gap and preference can be explained by the fact that Biden belongs to the Democratic party whereas Trump belongs to the republican party. Democratic party has a core idea of freedom, females is more emotional in general and care more about well-fare, freedom, diversity and care. These preferences will give the Democratic party more female supporters. On the other hand, "republican party features power, responsibility and promotes business and free trade"[6], which will be more favorable by males. Since Trump has more male supporters and Biden has more female supporters, the difference almost evens out in the bar graph, which again produces a similar chance of winning between Trump and Biden. 
+
+### State
+In terms of state, states that are along the great lakes appears to be support Trump, such as Pennsylvania, Wisconsin and Ohio. "These states are known be U. S’s manufacturing state that relies heavily on industries and manufacturing goods"[7], as discussed earlier, the republican party that Trump belongs favors free trade and promotes business, which is beneficial for the workers and people that lives in these states. As both Trump and Bidens are travelling from state to state conducting speeches and polling for votes, we again observe an almost even split in the states that supports each candidate. 
+
+We have made our prediction that Trump gets a popular vote of 41.4%, while Biden gets 40.8%. The number of votes are very close with only 0.6% difference. Both presidential nominees gain advantages in certain variables and some disadvantages on the other. Referring to our predictions strictly, then Donald Trump will win the election. There are several reasons to explain. First of all, from the variable race_ethinicity, we see that white people makes up a large portion of the entire U.S population, and a lot of them are supporting Trump rather than Biden. Generally, the Democratic Party has more Black supporters, but the Blacks usually have lower voting rate during the past elections. Although Biden has more supporters in other race, majority could overtake the minority vote. Secondly, Trump has set a few goals back in the 2016 election, such as quiting the Iranian nuclear deal, quiting NATO, reducing corporate income tax, protecting U.S intellectual Property Rights, building the Mexican Wall, etc. Although not all the objectives sound perfect, but Trump has done what he said, Trump did act on what he says which is an important trait as a politician. Thirdly, Trump did try to promote the U.S economy, since 2017, Trump has largely reduced tax for U.S corporates, lowering the cost of trading, protects U.S owned corporates and increasing job opportunities, all of these has result in a low unemployment rate of only 3.5% in the late 2019 before the pandemic. Also, during the George Floyd incident, Trump has strictly ordered the government to reduce the violent action and protest. Based off the estimated proportion of voters in favor of voting for Donald Trump being 41.4%, we predict that Donald Trump may have higher chance to win the election. 
+
+However, it is the truth that Trump did not fulfill his duty in controlling the COVID-19 pandemic. Since the overal death surpass 100000, there are increased disapproval sounds towards his response to the pandemic. Given we predicted the vote outcome based on models built with data in June 2020, there are 4 months left to the presidential election day. The unsure voters may make new decisions, which is the part we wouldn't know. Biden will still have possibilities to win the election.
+
+
+## Weakness and Next Step
+The weakness of this analysis is the variable part, the variables that we pick are all very relevant and closely related with the response variable, in each bar graph, we do see a difference in supporters of the two candidates, however, the results are too similar in most cases. Which makes it hard to differentiate who has a slight advantage when comparing with a certain variable. Let’s take the variable age for example, we have constructed five vertical bars for each candidate, the result turns out that Trump has more volume in two of the bars and Biden also has more volume in the other two bars, so the result evens out, which is hard to come up with a conclusion or to discuss who actually stands out. 
+
+In terms of next step, there are two things that can be improved, one is finding a variable that can clearly differentiates a result between the two candidates. The other is about graphing the plot, in this report, for a more direct and simple view of the graph, the proportion of vote and no vote is stacked on each other, which takes some time to compare who has greater value than the other. Next time we will try putting them side by side, although that could take up more space and makes the graph more complex, we think this might be able to provide a straighter forward comparison. 
+
+\newpage
+
+# Appendix
+## R Code
+**The popular vote outcome for Trump**
+\begin{verbatim}
+- Creating the Model
+model_logit_trump <- glm(vote_trump ~ gender + age + race_ethnicity + employment + 
+                           state_name, data = survey_data, binomial)
+
+- Model Summary (to be reported in Results section)
+kable(broom::tidy(model_logit_trump), "latex", booktabs = T) %>% 
+  kable_styling(latex_options = c("striped", "scale_down"))
+  
+- Apply the fitted model to census_data, and get the log odds estimates
+census_data$logodds_estimate <- model_logit_trump%>%
+  predict(newdata = census_data)
+
+- Calculate the probability of voting for Trump for individuals within each stratum
+census_data$estimate <- exp(census_data$logodds_estimate)/(1+exp(census_data$logodds_estimate))
+
+- Sum up the probability of voting for Trump for each stratum
+census_data <- census_data %>%
+  mutate(elect_predict_prob = estimate * n) 
+
+Trump_prob <- sum(census_data$elect_predict_prob)/sum(census_data$n)
+Trump_prob
+\end{verbatim}
+
+**The popular vote outcome for Biden**
+\begin{verbatim}
+- Creating the Model
+model_logit_biden <- glm(vote_biden ~ gender + age + race_ethnicity + employment + 
+                           state_name, data = survey_data, binomial)
+
+- Model Results (to Report in Results section)
+kable(broom::tidy(model_logit_biden), "latex", booktabs = T) %>% 
+  kable_styling(latex_options = c("striped", "scale_down"))
+  
+- Apply the fitted model to census_data, and get the log odds estimates
+census_data$logodds_estimate2 <- model_logit_biden%>%
+  predict(newdata = census_data)
+
+- Calculate the probability of voting for Biden for individuals within each stratum
+census_data$estimate2 <- exp(census_data$logodds_estimate2)/(1+exp(census_data$logodds_estimate2))
+
+- Sum up the probability of voting for Biden for each stratum
+census_data <- census_data %>%
+  mutate(elect_predict_prob2 = estimate2 * n) 
+
+Biden_prob <- sum(census_data$elect_predict_prob2)/sum(census_data$n)
+Biden_prob
+\end{verbatim}
+
+**The electoral vote outcome**
+\begin{verbatim}
+polling <- census_data%>%
+  group_by(state_name) %>%
+  mutate(state_poll_trump = sum(elect_predict_prob)/sum(n)) %>%
+  mutate(state_poll_biden = sum(elect_predict_prob2)/sum(n)) %>%
+  dplyr::select(state_name, state_poll_trump, state_poll_biden) %>%
+  distinct() %>%
+  mutate(trump_victory = ifelse(state_poll_trump > state_poll_biden, 1, 0)) %>%
+  mutate(biden_victory = ifelse(state_poll_biden > state_poll_trump, 1, 0))
+
+polling$electoral_votes <- c(9, 3, 11, 6, 55, 9, 7, 3, 29, 16, 4, 4, 20, 11, 6, 6, 8, 8, 4, 10, 
+                             11, 16, 10, 6, 10, 3, 5, 6, 4, 14, 5, 29, 15, 3, 18, 7, 7, 20, 4, 
+                             9, 3, 11, 38, 6, 3, 13, 12, 5, 10, 3)
+
+sum(polling$trump_victory * polling$electoral_votes)
+sum(polling$biden_victory * polling$electoral_votes)
+\end{verbatim}
+
+
+**Table: `polling`**
+```{r, echo=FALSE}
+kable(polling)
+```
+
+
+
+\newpage
+
+# Reference
+
+[1] GeeksForGeeks, A., AmiyaRanjanRout, &amp; GeeksForGeeks, T. (2020, September 02). Advantages and Disadvantages of Logistic Regression. Retrieved November 01, 2020, from https://www.geeksforgeeks.org/advantages-and-disadvantages-of-logistic-regression/
+
+[2] Multilevel regression with poststratification. (2020, October 14). Retrieved November 01, 2020, from https://en.wikipedia.org/wiki/Multilevel_regression_with_poststratification
+
+[3] Biden Bolsters Lead Over Trump Among Young Voters. (n.d.). Retrieved November 01, 2020, from https://www.usnews.com/news/elections/articles/2020-10-26/biden-bolsters-lead-over-trump-among-young-voters
+
+[4] Charles. (2019, July 14). Trump's Tweets Prove That He Is a Raging Racist. Retrieved November 01, 2020, from https://www.nytimes.com/2019/07/14/opinion/trump-twitter-racism.html?_ga=2.154681726.756034816.1604194097-739269052.1604194097
+
+[5] Team, R. (2020, September 23). US 2020 election: The economy under Trump in six charts. Retrieved November 01, 2020, from https://www.bbc.com/news/world-45827430
+
+[6] Sokolove, M. (2020, October 23). Why Does Trump Win With White Men? Retrieved November 01, 2020, from https://www.nytimes.com/2020/10/23/opinion/sunday/gender-gap-2020-election.html
+
+[7] Barry, E. (n.d.). The 2020 Battleground States: Updates on the Swing Voters. Retrieved November 01, 2020, from https://www.nytimes.com/live/2020/battleground-states-2020-election
+
+
+
 
 
